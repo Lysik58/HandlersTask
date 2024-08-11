@@ -1,8 +1,8 @@
-package UserHandlers
+package user_handlers
 
 import (
+	"HandlersTask/pkg"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 )
@@ -11,7 +11,7 @@ type Person struct {
 	Id    int    `json:"id"`
 	Name  string `json:"name"`
 	Age   int    `json:"age"`
-	Email string `json:"email,omitempty"`
+	Email string `json:"email,"`
 }
 
 var PersonData = map[int]Person{
@@ -48,13 +48,13 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		resp, err := json.Marshal(PersonData)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			ErrorResponse(w, "Service Error", "Ошибка на сервере", http.StatusInternalServerError)
+			pkg.ErrorResponse(w, "Service error", "Ошибка на сервере", http.StatusInternalServerError)
 		}
 		w.WriteHeader(http.StatusOK)
 		_, err = w.Write(resp)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			ErrorResponse(w, "Service Error", "Ошибка на сервере", http.StatusInternalServerError)
+			pkg.ErrorResponse(w, "Service error", "Ошибка на сервере", http.StatusInternalServerError)
 
 		}
 	default:
@@ -65,30 +65,29 @@ func GetOneUser(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Println(r.URL.Query().Get("id"))
-		idOfUser, err := strconv.Atoi(r.URL.Query().Get("id"))
+		user_id, err := strconv.Atoi(r.URL.Query().Get("id"))
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			ErrorResponse(w, "service error", "Ошибка на сервере", http.StatusInternalServerError)
+			pkg.ErrorResponse(w, "Service error", "Ошибка на сервере", http.StatusInternalServerError)
 		}
 
-		user, ok := PersonData[idOfUser]
+		userByID, ok := PersonData[user_id]
 		if !ok {
 			w.WriteHeader(http.StatusInternalServerError)
-			ErrorResponse(w, "user not found", "Такого человека нет в базе", http.StatusNotFound)
+			pkg.ErrorResponse(w, "User not found", "Такого человека нет в базе", http.StatusNotFound)
 			return
 		}
 
-		resp, err := json.Marshal(user)
+		resp, err := json.Marshal(userByID)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			ErrorResponse(w, "Marshall error", "Ошибка на сервере", http.StatusInternalServerError)
+			pkg.ErrorResponse(w, "Marshall error", "Ошибка на сервере", http.StatusInternalServerError)
 		}
 
 		_, err = w.Write(resp)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			ErrorResponse(w, "Response error", "Ошибка на сервере", http.StatusInternalServerError)
+			pkg.ErrorResponse(w, "Response error", "Ошибка на сервере", http.StatusInternalServerError)
 		}
 	}
 }
@@ -100,12 +99,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&s)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			ErrorResponse(w, "not found", "Ошибка декода, возможно типы данных", http.StatusNotFound)
+			pkg.ErrorResponse(w, "Not found", "Ошибка декода, возможно типы данных", http.StatusNotFound)
 		}
 		err = r.Body.Close()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			ErrorResponse(w, "Body close error", "Ошибка на сервере", http.StatusInternalServerError)
+			pkg.ErrorResponse(w, "Body close error", "Ошибка на сервере", http.StatusInternalServerError)
 		}
 		PersonData[len(PersonData)+1] = Person{
 			Id:    len(PersonData) + 1,
@@ -113,7 +112,13 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			Age:   s.Age,
 			Email: s.Email,
 		}
-		fmt.Println(s)
+		resp, err := json.Marshal(s.Id)
+		_, err = w.Write([]byte(resp))
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			pkg.ErrorResponse(w, "Id error", "Ошибка на сервере", http.StatusInternalServerError)
+		}
+
 	}
 
 }
@@ -123,14 +128,14 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		idOfUser, err := strconv.Atoi(r.URL.Query().Get("id"))
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			ErrorResponse(w, "service error", "Ошибка на сервере", http.StatusInternalServerError)
+			pkg.ErrorResponse(w, "Service error", "Ошибка на сервере", http.StatusInternalServerError)
 		}
 
 		delete(PersonData, idOfUser)
 		_, err = w.Write([]byte(strconv.Itoa(len(PersonData))))
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			ErrorResponse(w, "delete error", "Ошибка на сервере", http.StatusInternalServerError)
+			pkg.ErrorResponse(w, "Delete error", "Ошибка на сервере", http.StatusInternalServerError)
 		}
 	}
 }

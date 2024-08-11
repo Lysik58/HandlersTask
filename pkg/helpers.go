@@ -1,8 +1,8 @@
-package UserHandlers
+package pkg
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -19,11 +19,11 @@ func ErrorResponse(w http.ResponseWriter, error, details string, status int) {
 		Status:  status,
 	})
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal("Error func error response", err)
 	}
 	_, err = w.Write(resp)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal("Error func error response", err)
 	}
 
 }
