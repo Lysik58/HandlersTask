@@ -8,10 +8,10 @@ import (
 )
 
 type Person struct {
-	Id    int    `json:"id"`
-	Name  string `json:"name"`
-	Age   int    `json:"age"`
-	Email string `json:"email,"`
+	Id    int    `json:"id" db:"id" `
+	Name  string `json:"name" db:"name"`
+	Age   int    `json:"age" db:"age"`
+	Email string `json:"email," db:"email"`
 }
 
 var PersonData = map[int]Person{
